@@ -50,20 +50,20 @@ static int foundCacheCount = 0;
 
 /* Options parsed from the command line  */
 static int expectedCacheCount = -1;
-static jboolean useCommandLineValues = (jboolean) 0;
+static jboolean useCommandLineValues = JNI_FALSE;
 static int deleteCaches = 0;
-static char* cachePrefix; /* All caches created by the test should start with this. */
+static char* cachePrefix = NULL; /* All caches created by the test should start with this. */
 static const jbyte *cacheDir = NULL;
 static char *cacheDirPrintable = NULL; /* the name of the cache dir in appropriate ascii/ebcdic for printing */
 
 
-#ifdef ZOS
-  #pragma convlit(suspend)
-#endif
+#if defined(ZOS)
+#pragma convlit(suspend)
+#endif /* defined(ZOS) */
 
 /**
- * All message strings are defined here, as on z/os they need to
- * be kept as ebcdic, rather than converted to ascii, as all
+ * All message strings are defined here, as on z/OS they need to
+ * be kept as EBCDIC, rather than converted to ASCII, as all
  * other strings are.
  */
 static char* msg1  = "Iterating over cache number %d";
@@ -110,9 +110,9 @@ static char* msg41 = "No Cache prefix was specified. All caches will be deleted"
 static char* msg42 = "onload processing complete\n\n";
 static char* msg43 = "Unexpected return code '%d' from '%s'\n\n";
 
-#ifdef ZOS
-  #pragma convlit(resume)
-#endif
+#if defined(ZOS)
+#pragma convlit(suspend)
+#endif /* defined(ZOS) */
 
 /**
  * Returns a newly allocated copy of original. If length is
@@ -121,16 +121,16 @@ static char* msg43 = "Unexpected return code '%d' from '%s'\n\n";
  * of chars will be copied. The length of the returned string
  * will be 'length' + the null terminator
  *
- * Returns null if malloc fails.
+ * Returns NULL if malloc fails.
  *
  */
-char* copyString(char* original, int length) {
-
-   char* newCopy = NULL;
-
-   if (length == -1) {
-       newCopy = malloc(strlen(original) + 1);
-       if (newCopy == NULL) {
+ char *
+ copyString(char *original, int length)
+ {
+	char *newCopy = NULL;
+	if (-1 == length) {
+		newCopy = malloc(strlen(original) + 1);
+		if (NULL == newCopy) {
         	return NULL;
        }
        strcpy(newCopy, original);
@@ -161,18 +161,15 @@ char* copyString(char* original, int length) {
  */
 char* copyAndConvert(char* asciiString) {
 
-    #ifdef ZOS
-
-    	char* copiedString;
-    	copiedString = copyString(asciiString, -1);
-    	__atoe(copiedString);
-    	return copiedString;
-
-    #else
-
+	#if defined(ZOS)
+		char *copiedString = copyString(asciiString, -1);
+		if (NULL != copiedString) {
+			__atoe(copiedString);
+		}
+		return copiedString;
+	#else
     	return asciiString;
-
-    #endif
+	#endif /* defined(ZOS) */
 }
 
 /**
@@ -184,9 +181,9 @@ char* copyAndConvert(char* asciiString) {
  * On other platforms, this is a no-op.
  */
 void freeConvertedString(char* ebcdicString) {
-   #ifdef ZOS
+	#if defined(ZOS)
    		free(ebcdicString);
-   #endif
+   #endif /* defined(ZOS) */
    return;
 }
 
@@ -198,24 +195,24 @@ void iteratorLogger(const char* msg, ...) {
 
    va_list args;
    time_t now;
-   char* formattedTime;
+   char *formattedTime = NULL;
 
    time(&now);
    formattedTime = ctime(&now);
 
-   #ifdef ZOS
-       #pragma convlit(suspend) /* Need this for the printf format strings below */
-   #endif
+   #if defined(ZOS)
+   #pragma convlit(suspend) /* Need this for the printf format strings below */
+   #endif /* defined(ZOS) */
 
-   va_start (args, msg);
+   va_start(args, msg);
    printf("%s", formattedTime);
-   vprintf (msg, args);
+   vprintf(msg, args);
    printf("\n");
-   va_end (args);
+   va_end(args);
 
-   #ifdef ZOS
-       #pragma convlit(resume)
-   #endif
+   #if defined(ZOS)
+   #pragma convlit(resume)
+   #endif /* defined(ZOS) */
 
    return;
 }
@@ -231,8 +228,7 @@ static jint JNICALL validateSharedCacheInfo(jvmtiEnv *jvmti, jvmtiSharedCacheInf
 
    iteratorLogger(msg1, foundCacheCount);
    {
-       char* convertedName;
-       convertedName = copyAndConvert( (char *) cache_info->name);
+	   char *convertedName = copyAndConvert((char *)cache_info->name);
        iteratorLogger(msg2, convertedName);
        freeConvertedString(convertedName);
    }
@@ -262,9 +258,9 @@ static jint JNICALL validateSharedCacheInfo(jvmtiEnv *jvmti, jvmtiSharedCacheInf
 
     if (deleteThis) {
 
-        jvmtiError err;
-        jint cacheType;
-        jint errorCode;
+        jvmtiError err = JVMTI_ERROR_NONE;
+        jint cacheType = 0;
+        jint errorCode = 0;
 
         iteratorLogger(msg9);
         if (cache_info->isPersistent) {
@@ -536,13 +532,13 @@ void parseOptions(const char* options) {
         char* convertedExpectedCacheCount = copyAndConvert( (char *) expectedCacheString);
         int success;
 
-        #ifdef ZOS
-            #pragma convlit(suspend) /* needed for the format string in scanf  */
-        #endif
+        #if defined(ZOS)
+        #pragma convlit(suspend) /* needed for the format string in scanf  */
+        #endif /* defined(ZOS) */
         success = sscanf(convertedExpectedCacheCount, "%d", &expectedCacheCount);
-        #ifdef ZOS
-            #pragma convlit(resume)
-        #endif
+        #if defined(ZOS)
+        #pragma convlit(resume)
+        #endif /* defined(ZOS) */
 
         if (success != 1) {
             /* Failed to parse an integer  */
@@ -619,7 +615,7 @@ JNIEXPORT jint JNICALL Agent_OnLoad(JavaVM *jvm, char *options, void *reserved) 
     parseOptions(options);
 
     /* Get access to JVMTI */
-    (*jvm)->GetEnv(jvm, (void **)&jvmti, JVMTI_VERSION_1_0);
+	(*jvm)->GetEnv(jvm, (void **)&jvmti, JVMTI_VERSION_1_0);
 
     /* Setup the callback function for vm init */
     memset(&eventCallbacks, 0, sizeof(eventCallbacks));
