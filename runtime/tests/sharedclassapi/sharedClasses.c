@@ -493,7 +493,7 @@ char* findOption(const char* optionString, char* optionName) {
         return copyString(valueStart, -1);
     }
 
-    valueLength = trailingCommaPos - valueStart;
+    valueLength = (int)(trailingCommaPos - valueStart);
     return copyString(valueStart, valueLength);
 }
 
