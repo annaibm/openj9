@@ -27,21 +27,28 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 <suite id="Liberty JFR Tests" timeout="6000">
 	<!-- Test 1: Create Liberty server -->
 	<test id="Create Liberty test server">
-		<command>$LIBERTY_HOME$/bin/server create jfrTestServer</command>
+		<command>$LIBERTY_HOME/bin/server create jfrTestServer</command>
 		<output type="success" caseSensitive="yes" regex="no">Server jfrTestServer created</output>
 		<output type="failure" caseSensitive="yes" regex="no">Server jfrTestServer already exists</output>
 		<output type="failure" caseSensitive="yes" regex="no">CWWKE0005E</output>
 	</test>
 
-	<!-- Test 2: Start Liberty with JFR enabled - approx 10 seconds -->
+	<!-- Test 2: Configure JVM options for JFR -->
+	<test id="Configure JFR options for Liberty server">
+		<command>$EXE$ -cp $RESJAR$ org.openj9.test.LibertyJvmOptions $LIBERTY_HOME/usr/servers/jfrTestServer/jvm.options -XX:StartFlightRecording</command>
+		<output type="success" caseSensitive="yes" regex="no">JVM options configured</output>
+		<output type="failure" caseSensitive="yes" regex="no">Exception</output>
+	</test>
+
+	<!-- Test 3: Start Liberty with JFR enabled - approx 10 seconds -->
 	<test id="Start Liberty server with JFR recording">
-		<command>$LIBERTY_HOME$/bin/server start jfrTestServer --jvm-options="-XX:StartFlightRecording -Dibm.java9.forceCommonCleanerShutdown=true"</command>
+		<command>$LIBERTY_HOME/bin/server start jfrTestServer</command>
 		<output type="required" caseSensitive="yes" regex="no">Server jfrTestServer started</output>
 		<output type="success" caseSensitive="yes" regex="no">CWWKF0011I</output>
 		<output type="failure" caseSensitive="yes" regex="no">CWWKE0701E</output>
 	</test>
 
-	<!-- Test 3: Run workload against Liberty - approx 100 seconds -->
+	<!-- Test 4: Run workload against Liberty - approx 100 seconds -->
 	<test id="Execute workload against Liberty server">
 		<command>$EXE$ -Dibm.java9.forceCommonCleanerShutdown=true -cp $RESJAR$ org.openj9.test.LibertyWorkload http://localhost:9080 100</command>
 		<output type="success" caseSensitive="yes" regex="no">Workload complete</output>
@@ -49,16 +56,16 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 		<output type="failure" caseSensitive="yes" regex="no">Exception</output>
 	</test>
 
-	<!-- Test 4: Stop Liberty server - approx 5 seconds -->
+	<!-- Test 5: Stop Liberty server - approx 5 seconds -->
 	<test id="Stop Liberty server">
-		<command>$LIBERTY_HOME$/bin/server stop jfrTestServer</command>
+		<command>$LIBERTY_HOME/bin/server stop jfrTestServer</command>
 		<output type="required" caseSensitive="yes" regex="no">Server jfrTestServer stopped</output>
 		<output type="failure" caseSensitive="yes" regex="no">CWWKE0006E</output>
 	</test>
 
-	<!-- Test 5: Verify JFR recording was created - approx 30 seconds -->
+	<!-- Test 6: Verify JFR recording was created -->
 	<test id="Verify JFR summary">
-		<command>$JFR_EXE$ summary $LIBERTY_HOME$/usr/servers/jfrTestServer/defaultJ9recording.jfr</command>
+		<command>$JFR_EXE$ summary $LIBERTY_HOME/usr/servers/jfrTestServer/defaultJ9recording.jfr</command>
 		<output type="required" caseSensitive="yes" regex="no">Version: 2.1</output>
 		<output type="required" caseSensitive="yes" regex="no">jdk.ExecutionSample</output>
 		<output type="success" caseSensitive="yes" regex="no">jdk.CPULoad</output>
@@ -66,9 +73,9 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 		<output type="failure" caseSensitive="yes" regex="no">jfr print: could not read recording</output>
 	</test>
 
-	<!-- Test 6: Verify execution samples in JFR recording - approx 30 seconds -->
+	<!-- Test 7: Verify execution samples in JFR recording -->
 	<test id="Verify JFR execution samples">
-		<command>$JFR_EXE$ print --xml --events "ExecutionSample" --stack-depth 1 $LIBERTY_HOME$/usr/servers/jfrTestServer/defaultJ9recording.jfr</command>
+		<command>$JFR_EXE$ print --xml --events "ExecutionSample" --stack-depth 1 $LIBERTY_HOME/usr/servers/jfrTestServer/defaultJ9recording.jfr</command>
 		<output type="required" caseSensitive="yes" regex="no">http://www.w3.org/2001/XMLSchema-instance</output>
 		<output type="required" caseSensitive="yes" regex="no">jdk.ExecutionSample</output>
 		<output type="required" caseSensitive="yes" regex="no">sampledThread</output>
@@ -76,29 +83,28 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 		<output type="failure" caseSensitive="yes" regex="no">jfr print: could not read recording</output>
 	</test>
 
-	<!-- Test 7: Verify thread events in JFR recording - approx 30 seconds -->
+	<!-- Test 8: Verify thread events in JFR recording -->
 	<test id="Verify JFR thread start events">
-		<command>$JFR_EXE$ print --xml --events "ThreadStart" $LIBERTY_HOME$/usr/servers/jfrTestServer/defaultJ9recording.jfr</command>
+		<command>$JFR_EXE$ print --xml --events "ThreadStart" $LIBERTY_HOME/usr/servers/jfrTestServer/defaultJ9recording.jfr</command>
 		<output type="required" caseSensitive="yes" regex="no">jdk.ThreadStart</output>
 		<output type="required" caseSensitive="yes" regex="no">eventThread</output>
 		<output type="required" caseSensitive="yes" regex="no">javaName</output>
 		<output type="failure" caseSensitive="yes" regex="no">jfr print: could not read recording</output>
 	</test>
 
-	<!-- Test 8: Verify GC events in JFR recording - approx 30 seconds -->
+	<!-- Test 9: Verify GC events in JFR recording -->
 	<test id="Verify JFR GC heap configuration">
-		<command>$JFR_EXE$ print --xml --events "GCHeapConfiguration" $LIBERTY_HOME$/usr/servers/jfrTestServer/defaultJ9recording.jfr</command>
+		<command>$JFR_EXE$ print --xml --events "GCHeapConfiguration" $LIBERTY_HOME/usr/servers/jfrTestServer/defaultJ9recording.jfr</command>
 		<output type="required" caseSensitive="yes" regex="no">http://www.w3.org/2001/XMLSchema-instance</output>
 		<output type="success" caseSensitive="yes" regex="no">jdk.GCHeapConfiguration</output>
 		<output type="failure" caseSensitive="yes" regex="no">jfr print: could not read recording</output>
 	</test>
 
-	<!-- Test 9: Cleanup - Remove Liberty server -->
+	<!-- Test 10: Cleanup - Remove Liberty server -->
 	<test id="Remove Liberty test server">
-		<command>$LIBERTY_HOME$/bin/server remove jfrTestServer</command>
+		<command>$LIBERTY_HOME/bin/server remove jfrTestServer</command>
 		<output type="success" caseSensitive="yes" regex="no">Server jfrTestServer removed</output>
 		<output type="success" caseSensitive="yes" regex="no">CWWKE0008I</output>
 	</test>
-</suite>
 
-<!-- Made with Bob -->
+</suite>
