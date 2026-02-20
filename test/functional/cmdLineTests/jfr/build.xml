@@ -38,13 +38,15 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 		<condition property="liberty.extracted">
 			<available file="${LIB_DIR}/wlp" type="dir"/>
 		</condition>
-		<unless>
-			<isset property="liberty.extracted"/>
+		<if>
+			<not>
+				<isset property="liberty.extracted"/>
+			</not>
 			<then>
 				<echo message="Extracting Liberty runtime to ${LIB_DIR}"/>
 				<unzip src="${LIB_DIR}/openliberty-runtime.zip" dest="${LIB_DIR}"/>
 			</then>
-		</unless>
+		</if>
 	</target>
 
 	<!-- set properties for this build -->
