@@ -29,6 +29,10 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 	<import file="${TEST_ROOT}/functional/cmdLineTests/buildTools.xml" />
 
+	<!-- Add Liberty runtime dependency for Liberty JFR tests -->
+	<property name="LIB" value="liberty_runtime"/>
+	<import file="${TEST_ROOT}/TKG/scripts/getDependencies.xml"/>
+
 	<!-- set properties for this build -->
 	<property name="DEST" value="${BUILD_ROOT}/functional/cmdLineTests/jfr" />
 	<property name="src" location="src" />
