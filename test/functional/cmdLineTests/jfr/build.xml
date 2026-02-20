@@ -98,7 +98,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 		<delete dir="${build}" />
 	</target>
 
-	<target name="build" depends="buildCmdLineTestTools">
+	<target name="build" depends="buildCmdLineTestTools,extractLiberty">
 		<antcall target="clean" inheritall="true" />
 	</target>
 </project>
