@@ -29,6 +29,28 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 	<import file="${TEST_ROOT}/functional/cmdLineTests/buildTools.xml" />
 
+	<!-- Add Liberty runtime dependency for Liberty JFR tests -->
+	<property name="LIB" value="liberty_runtime"/>
+	<import file="${TEST_ROOT}/TKG/scripts/getDependencies.xml"/>
+
+	<!-- Extract Liberty runtime after download -->
+	<target name="extractLiberty" depends="getDependentLibs">
+		<condition property="liberty.extracted">
+			<available file="${LIB_DIR}/wlp" type="dir"/>
+		</condition>
+		<if>
+			<not>
+				<isset property="liberty.extracted"/>
+			</not>
+			<then>
+				<echo message="Extracting Liberty runtime to ${LIB_DIR}"/>
+				<unzip src="${LIB_DIR}/openliberty-runtime.zip" dest="${LIB_DIR}"/>
+				<echo message="Setting execute permissions on Liberty scripts"/>
+				<chmod dir="${LIB_DIR}/wlp/bin" perm="755" includes="*"/>
+			</then>
+		</if>
+	</target>
+
 	<!-- set properties for this build -->
 	<property name="DEST" value="${BUILD_ROOT}/functional/cmdLineTests/jfr" />
 	<property name="src" location="src" />
@@ -80,7 +102,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 		<delete dir="${build}" />
 	</target>
 
-	<target name="build" depends="buildCmdLineTestTools">
+	<target name="build" depends="buildCmdLineTestTools,extractLiberty">
 		<antcall target="clean" inheritall="true" />
 	</target>
 </project>
