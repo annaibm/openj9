@@ -62,48 +62,41 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 		<output type="failure" caseSensitive="yes" regex="no">CWWKE0006E</output>
 	</test>
 
-	<!-- Test 6: Find JFR recording file -->
-	<test id="Find JFR recording file">
-		<command>$EXE$ -Dibm.java9.forceCommonCleanerShutdown=true -cp $RESJAR$ org.openj9.test.FindJfrFile $LIBERTY_HOME$/usr/servers/jfrTestServer</command>
-		<output type="success" caseSensitive="yes" regex="no">JFR file found:</output>
-		<output type="failure" caseSensitive="yes" regex="no">No JFR file found</output>
-	</test>
-
-	<!-- Test 7: Verify JFR recording was created - approx 30 seconds -->
+	<!-- Test 6: Verify JFR recording was created - approx 30 seconds -->
 	<test id="Verify JFR summary">
-		<command>$EXE$ -Dibm.java9.forceCommonCleanerShutdown=true -cp $RESJAR$ org.openj9.test.VerifyJfrRecording $LIBERTY_HOME$/usr/servers/jfrTestServer summary</command>
+		<command>$JFR_EXE$ summary $LIBERTY_HOME$/usr/servers/jfrTestServer/*.jfr</command>
 		<output type="required" caseSensitive="yes" regex="no">Version: 2.1</output>
 		<output type="required" caseSensitive="yes" regex="no">jdk.ExecutionSample</output>
 		<output type="success" caseSensitive="yes" regex="no">jdk.CPULoad</output>
 		<output type="success" caseSensitive="yes" regex="no">jdk.JavaThreadStatistics</output>
-		<output type="failure" caseSensitive="yes" regex="no">could not read recording</output>
+		<output type="failure" caseSensitive="yes" regex="no">jfr summary: could not read recording</output>
 	</test>
 
-	<!-- Test 8: Verify execution samples in JFR recording - approx 30 seconds -->
+	<!-- Test 7: Verify execution samples in JFR recording - approx 30 seconds -->
 	<test id="Verify JFR execution samples">
-		<command>$EXE$ -Dibm.java9.forceCommonCleanerShutdown=true -cp $RESJAR$ org.openj9.test.VerifyJfrRecording $LIBERTY_HOME$/usr/servers/jfrTestServer print ExecutionSample</command>
+		<command>$JFR_EXE$ print --xml --events "ExecutionSample" --stack-depth 1 $LIBERTY_HOME$/usr/servers/jfrTestServer/*.jfr</command>
 		<output type="required" caseSensitive="yes" regex="no">http://www.w3.org/2001/XMLSchema-instance</output>
 		<output type="required" caseSensitive="yes" regex="no">jdk.ExecutionSample</output>
 		<output type="required" caseSensitive="yes" regex="no">sampledThread</output>
 		<output type="success" caseSensitive="yes" regex="no">STATE_RUNNABLE</output>
-		<output type="failure" caseSensitive="yes" regex="no">could not read recording</output>
+		<output type="failure" caseSensitive="yes" regex="no">jfr print: could not read recording</output>
 	</test>
 
-	<!-- Test 9: Verify thread events in JFR recording - approx 30 seconds -->
+	<!-- Test 8: Verify thread events in JFR recording - approx 30 seconds -->
 	<test id="Verify JFR thread start events">
-		<command>$EXE$ -Dibm.java9.forceCommonCleanerShutdown=true -cp $RESJAR$ org.openj9.test.VerifyJfrRecording $LIBERTY_HOME$/usr/servers/jfrTestServer print ThreadStart</command>
+		<command>$JFR_EXE$ print --xml --events "ThreadStart" --stack-depth 1 $LIBERTY_HOME$/usr/servers/jfrTestServer/*.jfr</command>
 		<output type="required" caseSensitive="yes" regex="no">jdk.ThreadStart</output>
 		<output type="required" caseSensitive="yes" regex="no">eventThread</output>
 		<output type="required" caseSensitive="yes" regex="no">javaName</output>
-		<output type="failure" caseSensitive="yes" regex="no">could not read recording</output>
+		<output type="failure" caseSensitive="yes" regex="no">jfr print: could not read recording</output>
 	</test>
 
-	<!-- Test 10: Verify GC events in JFR recording - approx 30 seconds -->
+	<!-- Test 9: Verify GC events in JFR recording - approx 30 seconds -->
 	<test id="Verify JFR GC heap configuration">
-		<command>$EXE$ -Dibm.java9.forceCommonCleanerShutdown=true -cp $RESJAR$ org.openj9.test.VerifyJfrRecording $LIBERTY_HOME$/usr/servers/jfrTestServer print GCHeapConfiguration</command>
+		<command>$JFR_EXE$ print --xml --events "GCHeapConfiguration" $LIBERTY_HOME$/usr/servers/jfrTestServer/*.jfr</command>
 		<output type="required" caseSensitive="yes" regex="no">http://www.w3.org/2001/XMLSchema-instance</output>
 		<output type="success" caseSensitive="yes" regex="no">jdk.GCHeapConfiguration</output>
-		<output type="failure" caseSensitive="yes" regex="no">could not read recording</output>
+		<output type="failure" caseSensitive="yes" regex="no">jfr print: could not read recording</output>
 	</test>
 </suite>
 
