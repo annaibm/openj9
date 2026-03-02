@@ -35,7 +35,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 	<!-- Test 2: Configure JVM options for JFR -->
 	<test id="Configure JFR options for Liberty server">
-		<command>$EXE$ -Dibm.java9.forceCommonCleanerShutdown=true -cp $RESJAR$ org.openj9.test.LibertyJvmOptions $LIBERTY_HOME$/usr/servers/jfrTestServer/jvm.options -XX:StartFlightRecording</command>
+		<command>$EXE$ -Dibm.java9.forceCommonCleanerShutdown=true -cp $RESJAR$ org.openj9.test.LibertyJvmOptions $LIBERTY_HOME$/usr/servers/jfrTestServer/jvm.options -XX:StartFlightRecording=filename=liberty_jfr_test.jfr</command>
 		<output type="success" caseSensitive="yes" regex="no">JVM options configured</output>
 		<output type="failure" caseSensitive="yes" regex="no">Exception</output>
 	</test>
@@ -65,7 +65,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 	<!-- Test 6: Verify JFR recording was created - approx 30 seconds -->
 	<test id="Verify JFR summary">
-		<command>$JFR_EXE$ summary $LIBERTY_HOME$/usr/servers/jfrTestServer/*.jfr</command>
+		<command>$JFR_EXE$ summary liberty_jfr_test.jfr</command>
 		<output type="required" caseSensitive="yes" regex="no">Version: 2.1</output>
 		<output type="required" caseSensitive="yes" regex="no">jdk.ExecutionSample</output>
 		<output type="success" caseSensitive="yes" regex="no">jdk.CPULoad</output>
@@ -75,7 +75,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 	<!-- Test 7: Verify execution samples in JFR recording - approx 30 seconds -->
 	<test id="Verify JFR execution samples">
-		<command>$JFR_EXE$ print --xml --events "ExecutionSample" --stack-depth 1 $LIBERTY_HOME$/usr/servers/jfrTestServer/*.jfr</command>
+		<command>$JFR_EXE$ print --xml --events "ExecutionSample" --stack-depth 1 liberty_jfr_test.jfr</command>
 		<output type="required" caseSensitive="yes" regex="no">http://www.w3.org/2001/XMLSchema-instance</output>
 		<output type="required" caseSensitive="yes" regex="no">jdk.ExecutionSample</output>
 		<output type="required" caseSensitive="yes" regex="no">sampledThread</output>
@@ -85,7 +85,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 	<!-- Test 8: Verify thread events in JFR recording - approx 30 seconds -->
 	<test id="Verify JFR thread start events">
-		<command>$JFR_EXE$ print --xml --events "ThreadStart" --stack-depth 1 $LIBERTY_HOME$/usr/servers/jfrTestServer/*.jfr</command>
+		<command>$JFR_EXE$ print --xml --events "ThreadStart" --stack-depth 1 liberty_jfr_test.jfr</command>
 		<output type="required" caseSensitive="yes" regex="no">jdk.ThreadStart</output>
 		<output type="required" caseSensitive="yes" regex="no">eventThread</output>
 		<output type="required" caseSensitive="yes" regex="no">javaName</output>
@@ -94,7 +94,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 	<!-- Test 9: Verify GC events in JFR recording - approx 30 seconds -->
 	<test id="Verify JFR GC heap configuration">
-		<command>$JFR_EXE$ print --xml --events "GCHeapConfiguration" $LIBERTY_HOME$/usr/servers/jfrTestServer/*.jfr</command>
+		<command>$JFR_EXE$ print --xml --events "GCHeapConfiguration" liberty_jfr_test.jfr</command>
 		<output type="required" caseSensitive="yes" regex="no">http://www.w3.org/2001/XMLSchema-instance</output>
 		<output type="success" caseSensitive="yes" regex="no">jdk.GCHeapConfiguration</output>
 		<output type="failure" caseSensitive="yes" regex="no">jfr print: could not read recording</output>
