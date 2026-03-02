@@ -44,6 +44,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 	<test id="Start Liberty server with JFR recording">
 		<command>$LIBERTY_HOME$/bin/server start jfrTestServer</command>
 		<output type="required" caseSensitive="yes" regex="no">Server jfrTestServer started</output>
+		<output type="success" caseSensitive="yes" regex="no">Server jfrTestServer started</output>
 		<output type="failure" caseSensitive="yes" regex="no">CWWKE0701E</output>
 	</test>
 
