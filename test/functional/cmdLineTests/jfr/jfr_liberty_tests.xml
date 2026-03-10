@@ -103,8 +103,8 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 	<!-- Teardown: Cleanup Liberty server and JFR file -->
 	<test id="Cleanup Liberty test server">
-		<command>rm -rf $LIBERTY_HOME$/usr/servers/jfrTestServer &amp;&amp; echo "Server jfrTestServer cleaned up"</command>
-		<output type="success" caseSensitive="yes" regex="no">Server jfrTestServer cleaned up</output>
+		<command>rm -rf $LIBERTY_HOME$/usr/servers/jfrTestServer; echo "cleanup done"</command>
+		<output type="success" caseSensitive="yes" regex="no">cleanup done</output>
 	</test>
 </suite>
 
