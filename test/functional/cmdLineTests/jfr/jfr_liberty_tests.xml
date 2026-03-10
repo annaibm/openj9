@@ -27,7 +27,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 <suite id="Liberty JFR Tests" timeout="6000">
 	<!-- Test 1: Create Liberty server -->
 	<test id="Create Liberty test server">
-		<command>$LIBERTY_HOME$/bin/server create jfrTestServer</command>
+		<command>$LIBERTY_HOME$/bin/server$SCRIPT_SUFFIX$ create jfrTestServer</command>
 		<output type="success" caseSensitive="yes" regex="no">Server jfrTestServer created</output>
 		<output type="success" caseSensitive="yes" regex="no">already exists</output>
 		<output type="failure" caseSensitive="yes" regex="no">CWWKE0005E</output>
@@ -42,7 +42,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 	<!-- Test 3: Start Liberty with JFR enabled - approx 10 seconds -->
 	<test id="Start Liberty server with JFR recording">
-		<command>$LIBERTY_HOME$/bin/server start jfrTestServer</command>
+		<command>$LIBERTY_HOME$/bin/server$SCRIPT_SUFFIX$ start jfrTestServer</command>
 		<output type="required" caseSensitive="yes" regex="no">Server jfrTestServer started</output>
 		<output type="success" caseSensitive="yes" regex="no">Server jfrTestServer started</output>
 		<output type="failure" caseSensitive="yes" regex="no">CWWKE0701E</output>
@@ -58,7 +58,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 	<!-- Test 5: Stop Liberty server - approx 5 seconds -->
 	<test id="Stop Liberty server">
-		<command>$LIBERTY_HOME$/bin/server stop jfrTestServer</command>
+		<command>$LIBERTY_HOME$/bin/server$SCRIPT_SUFFIX$ stop jfrTestServer</command>
 		<output type="success" caseSensitive="yes" regex="no">Server jfrTestServer stopped</output>
 		<output type="failure" caseSensitive="yes" regex="no">CWWKE0006E</output>
 	</test>
@@ -103,8 +103,9 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 	<!-- Teardown: Cleanup Liberty server and JFR file -->
 	<test id="Cleanup Liberty test server">
-		<command>rm -rf $LIBERTY_HOME$/usr/servers/jfrTestServer; echo "cleanup done"</command>
-		<output type="success" caseSensitive="yes" regex="no">cleanup done</output>
+		<command>rm -rf $LIBERTY_HOME$/usr/servers/jfrTestServer && echo "Server jfrTestServer removed" || echo "Server jfrTestServer does not exist"</command>
+		<output type="success" caseSensitive="yes" regex="no">Server jfrTestServer removed</output>
+		<output type="success" caseSensitive="yes" regex="no">does not exist</output>
 	</test>
 </suite>
 
