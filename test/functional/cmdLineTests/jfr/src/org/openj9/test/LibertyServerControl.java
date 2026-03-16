@@ -133,15 +133,30 @@ public class LibertyServerControl {
 
         Process process = pb.start();
 
-        // Read and display output
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
+        // Read output in a separate thread to avoid blocking
+        Thread outputReader = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+            } catch (IOException e) {
+                // Ignore - process may have terminated
             }
+        });
+        outputReader.setDaemon(true);
+        outputReader.start();
+
+        // Wait for process to complete with timeout
+        int exitCode = process.waitFor();
+
+        // Give output reader a moment to finish
+        try {
+            outputReader.join(1000);
+        } catch (InterruptedException e) {
+            // Ignore
         }
 
-        int exitCode = process.waitFor();
         System.out.println("Command completed with exit code: " + exitCode);
 
         return exitCode;
