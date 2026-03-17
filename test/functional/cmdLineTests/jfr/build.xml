@@ -29,12 +29,52 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 	<import file="${TEST_ROOT}/functional/cmdLineTests/buildTools.xml" />
 
-	<!-- Add Liberty runtime dependency for Liberty JFR tests -->
-	<property name="LIB" value="liberty_runtime"/>
-	<import file="${TEST_ROOT}/TKG/scripts/getDependencies.xml"/>
+	<!-- Liberty runtime properties -->
+	<property name="liberty.version" value="24.0.0.1"/>
+	<property name="liberty.url" value="https://public.dhe.ibm.com/ibmdl/export/pub/software/openliberty/runtime/release/${liberty.version}/openliberty-${liberty.version}.zip"/>
+	<property name="liberty.zip" value="${LIB_DIR}/openliberty-runtime.zip"/>
+	<property name="liberty.sha1" value="c59edb53e8e88e674b67f0941e1abfc30eb0cd49"/>
+
+	<!-- Download Liberty runtime -->
+	<target name="downloadLiberty">
+		<mkdir dir="${LIB_DIR}"/>
+		<condition property="liberty.downloaded">
+			<available file="${liberty.zip}"/>
+		</condition>
+		<if>
+			<not>
+				<isset property="liberty.downloaded"/>
+			</not>
+			<then>
+				<echo message="Downloading Liberty ${liberty.version} from ${liberty.url}"/>
+				<get src="${liberty.url}" dest="${liberty.zip}" verbose="true" usetimestamp="true"/>
+				<echo message="Liberty runtime downloaded to ${liberty.zip}"/>
+			</then>
+			<else>
+				<echo message="Liberty runtime already downloaded: ${liberty.zip}"/>
+			</else>
+		</if>
+
+		<!-- Verify SHA1 checksum -->
+		<checksum file="${liberty.zip}" algorithm="SHA1" property="${liberty.sha1}" verifyproperty="liberty.checksum.verified"/>
+		<condition property="liberty.checksum.ok">
+			<equals arg1="${liberty.checksum.verified}" arg2="true"/>
+		</condition>
+		<if>
+			<not>
+				<isset property="liberty.checksum.ok"/>
+			</not>
+			<then>
+				<fail message="Liberty runtime checksum verification failed. Expected SHA1: ${liberty.sha1}"/>
+			</then>
+			<else>
+				<echo message="Liberty runtime checksum verified successfully"/>
+			</else>
+		</if>
+	</target>
 
 	<!-- Extract Liberty runtime after download -->
-	<target name="extractLiberty" depends="getDependentLibs">
+	<target name="extractLiberty" depends="downloadLiberty">
 		<condition property="liberty.extracted">
 			<available file="${LIB_DIR}/wlp" type="dir"/>
 		</condition>
@@ -44,10 +84,14 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 			</not>
 			<then>
 				<echo message="Extracting Liberty runtime to ${LIB_DIR}"/>
-				<unzip src="${LIB_DIR}/openliberty-runtime.zip" dest="${LIB_DIR}"/>
+				<unzip src="${liberty.zip}" dest="${LIB_DIR}"/>
 				<echo message="Setting execute permissions on Liberty scripts"/>
 				<chmod dir="${LIB_DIR}/wlp/bin" perm="755" includes="*"/>
+				<echo message="Liberty runtime extracted successfully"/>
 			</then>
+			<else>
+				<echo message="Liberty runtime already extracted: ${LIB_DIR}/wlp"/>
+			</else>
 		</if>
 	</target>
 
